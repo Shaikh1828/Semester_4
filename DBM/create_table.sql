@@ -44,3 +44,5 @@ CREATE TABLE borrower (
 	CONSTRAINT borrower_customer_fk FOREIGN KEY (customer_name) REFERENCES customer (customer_name),
 	CONSTRAINT borrower_loan_fk FOREIGN KEY (loan_number) REFERENCES loan (loan_number)	
 );
+
+-- @G:\Semester_4\DBM\create_table.sql
