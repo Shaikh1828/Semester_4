@@ -10,7 +10,10 @@ struct Process
     int turnaround_time ; 
 } ; 
 
-bool compareProcess(Process a, Process b) ; 
+bool compareProcess(Process a, Process b)
+{
+    return a.burst_time < b.burst_time ; 
+} 
 
 int main()
 {
@@ -20,7 +23,7 @@ int main()
     int value, wait = 0, turn = 0 ; 
     string curr_process ; 
     char ch ; 
-    for( i = 0 ; i<process_num ; i++ )
+    for( i = 0 ; i < process_num ; i++ )
     {
         cin >> value ; 
         process[i].burst_time = value ; 
@@ -29,18 +32,15 @@ int main()
         process[i].process_id = i + 1 ; 
     }
     sort(process.begin(), process.end(), compareProcess) ; 
-    // for(auto p:process)
-    // {
-    //     cout << p.process_id << " " << p.burst_time << " " << p.priority << endl ; 
-    // }
+    
     process[0].turnaround_time = process[0].burst_time ; 
     process[0].waiting_time = 0 ; 
-    for(i = 1 ; i <= process_num ; i++)
+    for( i = 1 ; i <= process_num ; i++ )
     {
-        process[i].turnaround_time = process[i].burst_time+process[i-1].turnaround_time ; 
-        process[i].waiting_time = process[i].turnaround_time-process[i].burst_time ; 
+        process[i].turnaround_time = process[i].burst_time + process[i-1].turnaround_time ; 
+        process[i].waiting_time = process[i].turnaround_time - process[i].burst_time ; 
     }
-    cout << "Gantt chart:" << endl ; 
+    cout << "\nGantt chart:" << endl ; 
     cout << "|" ; 
     for( i = 0 ; i < process_num ; i++ )
     {
@@ -48,11 +48,11 @@ int main()
     }
     cout << endl ; 
     printf("%-9d", 0) ; 
-    for(auto p:process)
+    for( auto p : process )
     {
         printf("%-9d", p.turnaround_time) ; 
     }
-    cout << endl << endl ; 
+    cout << endl ; 
     printf("%s\t%s\t\t%s\n", "Process ID", "Turnaround Time", "Waiting Time") ; 
     for(auto p:process)
     {
@@ -64,7 +64,3 @@ int main()
     cout << "Average waiting time: " << (double)wait/process_num << endl ; 
 }
 
-bool compareProcess(Process a, Process b)
-{
-    return a.burst_time<b.burst_time ; 
-}
