@@ -1,48 +1,61 @@
 #include<bits/stdc++.h>
 using namespace std ;
 
+struct Process
+{
+    int processID ; 
+    int burstTime ; 
+    int arrivalTime ;
+    int priority ; 
+    int waitingTime ; 
+    int turnaroundTime ; 
+    int runTime ;
+} ; 
+
+bool compareProcess( Process a, Process b )
+{
+    return a.arrivalTime <= b.arrivalTime ; 
+} 
+
 int main()
 {
     freopen("inputAr.txt", "r", stdin) ;
 
     int processNumber , i, value, turn_time_sum = 0, wait_time_sum = 0 ;
-    vector<int> burstTime, priority, arrival, waitingTime, turnaroundTime , runTime ;
-    burstTime.push_back(0) ;
-    arrival.push_back(0) ;
-    turnaroundTime.push_back(0) ;
-    waitingTime.push_back(0) ;
-    runTime.push_back(0) ;
+    vector<Process> processes ;
+    
+    Process prs ;
 
     cin >> processNumber ;
 
-    for( i=1 ; i <= processNumber ; i++ )
+    for( i=0 ; i <= processNumber ; i++ )
     {
-        cin >> value ;
-        burstTime.push_back(value) ;
-        cin >> value ;
-        priority.push_back(value) ;
-        cin >> value ;
-        arrival.push_back(value) ;
-
+        cin >> prs.burstTime ;
+        cin >> prs.priority ;
+        cin >> prs.arrivalTime ;
+        processes.push_back(prs) ;
     }
 
-    for( i=1 ; i <= processNumber ; i++ )
+    sort ( processes.begin(), processes.end(), compareProcess );
+
+    for( i=0 ; i < processNumber ; i++ )
     {
-        if( arrival[i] <= turnaroundTime[i-1]) 
+        if( processes[i].arrivalTime < processes[i-1].runTime ) 
         {
-            turnaroundTime.push_back(burstTime[i] + runTime[i]) ;
-            waitingTime.push_back(turnaroundTime[i] - burstTime[i]) ;
-            runTime[i] = runTime[i] + (burstTime[i]) ;
+            processes[i].runTime = processes[i-1].runTime + processes[i].burstTime ;
+            processes[i].turnaroundTime = ( processes[i].runTime - processes[i].arrivalTime ) ;
+            processes[i].waitingTime = ( processes[i].turnaroundTime - processes[i].burstTime ) ;
         }
         else
         {
-            turnaroundTime.push_back(burstTime[i] ) ;
-            waitingTime.push_back(0) ;
-            runTime[i] += burstTime[i] + arrival[i] ;
+            processes[i].runTime = processes[i].burstTime + processes[i].arrivalTime ;
+            processes[i].turnaroundTime = ( processes[i].burstTime ) ;
+            processes[i].waitingTime = 0 ;
         }
             
-        turn_time_sum += turnaroundTime[i] ;
-        wait_time_sum += waitingTime[i] ;
+        turn_time_sum += processes[i].turnaroundTime ;
+        wait_time_sum += processes[i].waitingTime ;
+        //cout << runTime[i] << endl ;
     }
 
     cout << "\nGantt chart:\n" << endl ;
@@ -52,17 +65,18 @@ int main()
         cout << "---P" << i << "---|" ;
     }
     cout << endl ;
-    for( auto t : turnaroundTime )
+    printf("%-9d", 0 ) ;
+    for( i=0 ; i < processNumber ; i++ )
     {
-        printf("%-9d", t ) ;
+        printf("%-9d", processes[i].runTime ) ;
     }
     cout << endl << endl ;
 
     printf("%s\t%s\t\t%s\n","Process-ID", "TurnAround-Time", "Waiting-Time") ;
 
-    for( i=1 ; i <= processNumber ; i++ )
+    for( i=0 ; i < processNumber ; i++ )
     {
-        printf("P%d %20d %23d\n",i, turnaroundTime[i], waitingTime[i] ) ;
+        printf("P%d %20d %23d\n",i+1, processes[i].turnaroundTime, processes[i].waitingTime ) ;
     }
     cout << endl ;
     cout << "Average turnaround time: " << (double)turn_time_sum/processNumber << endl ;

@@ -3,22 +3,25 @@ using namespace std ;
 
 struct Process
 {
-    int process_id ;
-    int burst_time ;
+    int processID ;
+    int burstTime ;
     int priority ;
-    int waiting_time ;
-    int turnaround_time ;
-    int remaining_time ;
+    int waitingTime ;
+    int turnaroundTime ;
+    int remainingTime ;
 } ;
 
 struct Result
 {
-    int process_id ;
+    int processID ;
     int start ;
     int end ;
 } ;
 
-bool compareProcess(Process a, Process b) ;
+bool compareProcess(Process a, Process b)
+{
+    return a.priority > b.priority ;
+}
 
 int main()
 {
@@ -35,11 +38,11 @@ int main()
     for(i = 0 ;i<processNumber ;i++)
     {
         cin >> value ;
-        process[i].burst_time = value ;
+        process[i].burstTime = value ;
         cin >> value ;
         process[i].priority = value ;
-        process[i].process_id = i + 1 ;
-        process[i].remaining_time = process[i].burst_time ;
+        process[i].processID = i + 1 ;
+        process[i].remainingTime = process[i].burstTime ;
     }
 
     cin >> quantam ;
@@ -53,26 +56,26 @@ int main()
         {
             i = 0 ;
         }
-        if( process[i].remaining_time > 0 )
+        if( process[i].remainingTime > 0 )
         {
-            if( process[i].remaining_time <= quantam )
+            if( process[i].remainingTime <= quantam )
             {
-                curr_process = process[i].process_id ;
+                curr_process = process[i].processID ;
                 s = curr_time ;
-                e = curr_time + process[i].remaining_time ;
+                e = curr_time + process[i].remainingTime ;
                 curr_time = e ;
-                process[i].remaining_time = 0 ;
+                process[i].remainingTime = 0 ;
                 remaining_process-- ;
             }
             else
             {
-                curr_process = process[i].process_id ;
+                curr_process = process[i].processID ;
                 s = curr_time ;
                 e = curr_time + quantam ;
-                process[i].remaining_time -= quantam ;
+                process[i].remainingTime -= quantam ;
                 curr_time = e ;
             }
-            temp.process_id = process[i].process_id ;
+            temp.processID = process[i].processID ;
             temp.start = s ;
             temp.end = e ;
             result.push_back(temp) ;
@@ -83,7 +86,7 @@ int main()
     cout << "|" ;
     for(auto r:result)
     {
-        cout << "---P" << r.process_id << "---|" ;
+        cout << "---P" << r.processID << "---|" ;
     }
     cout << endl ;
     printf("%-9d", 0) ;
@@ -95,34 +98,34 @@ int main()
     // cout << "Average turnaround time: " << (double)turn/processNumber << endl ;
     // cout << "Average waiting time: " << (double)wait/processNumber << endl ;
     // for(auto r:result){
-    //     cout << r.process_id << " " << r.start << "-->" << r.end << endl ;
+    //     cout << r.processID << " " << r.start << "-->" << r.end << endl ;
     // }
     for( auto r : result )
     {
         for( i = 0 ; i < processNumber ; i++ )
         {
-            if( process[i].process_id == r.process_id )
+            if( process[i].processID == r.processID )
             {
-                process[i].turnaround_time = r.end ;
+                process[i].turnaroundTime = r.end ;
                 break ;
             }
         }
     }
     for( i = 0 ; i < processNumber ; i++ )
     {
-        process[i].waiting_time = process[i].turnaround_time-process[i].burst_time ;
+        process[i].waitingTime = process[i].turnaroundTime-process[i].burstTime ;
     }
     printf("PID\tTurn\tWait\n") ;
     for( i = 0 ; i < processNumber ; i++ )
     {
-        printf("P%d\t%d\t%d\n", process[i].process_id, process[i].turnaround_time, process[i].waiting_time ) ;
+        printf("P%d\t%d\t%d\n", process[i].processID, process[i].turnaroundTime, process[i].waitingTime ) ;
     }
 
     for( auto p : process )
     {
-        printf("P%d %20d %23d\n", p.process_id, p.turnaround_time, p.waiting_time) ; 
-        wait += p.waiting_time ; 
-        turn += p.turnaround_time ; 
+        printf("P%d %20d %23d\n", p.processID, p.turnaroundTime, p.waitingTime) ; 
+        wait += p.waitingTime ; 
+        turn += p.turnaroundTime ; 
     }
     cout << "Average turnaround time: " << (double)turn/processNumber << endl ; 
     cout << "Average waiting time: " << (double)wait/processNumber << endl ; 
@@ -130,7 +133,3 @@ int main()
     return 0 ;
 }
 
-bool compareProcess(Process a, Process b)
-{
-    return a.priority > b.priority ;
-}
