@@ -37,10 +37,8 @@ int main()
     cin >> processNumber ;
     for(i = 0 ;i<processNumber ;i++)
     {
-        cin >> value ;
-        process[i].burstTime = value ;
-        cin >> value ;
-        process[i].priority = value ;
+        cin >> process[i].burstTime ;
+        cin >> process[i].priority ;
         process[i].processID = i + 1 ;
         process[i].remainingTime = process[i].burstTime ;
     }
@@ -50,6 +48,7 @@ int main()
     i = 0 ;
     int curr_time = 0 ;
     Result temp ;
+    
     while(remaining_process)
     {
         if( i == processNumber )
@@ -82,6 +81,7 @@ int main()
         }
         i++ ;
     }
+
     cout << "Gantt chart:" << endl ;
     cout << "|" ;
     for(auto r:result)
@@ -95,11 +95,7 @@ int main()
         printf("%-9d", r.end) ;
     }
     cout << endl ;
-    // cout << "Average turnaround time: " << (double)turn/processNumber << endl ;
-    // cout << "Average waiting time: " << (double)wait/processNumber << endl ;
-    // for(auto r:result){
-    //     cout << r.processID << " " << r.start << "-->" << r.end << endl ;
-    // }
+   
     for( auto r : result )
     {
         for( i = 0 ; i < processNumber ; i++ )
@@ -115,7 +111,7 @@ int main()
     {
         process[i].waitingTime = process[i].turnaroundTime-process[i].burstTime ;
     }
-    printf("PID\tTurn\tWait\n") ;
+    printf("\nPID\tTurn\tWait\n") ;
     for( i = 0 ; i < processNumber ; i++ )
     {
         printf("P%d\t%d\t%d\n", process[i].processID, process[i].turnaroundTime, process[i].waitingTime ) ;
@@ -123,10 +119,11 @@ int main()
 
     for( auto p : process )
     {
-        printf("P%d %20d %23d\n", p.processID, p.turnaroundTime, p.waitingTime) ; 
+        printf("P%d\t%d\t%d\n", p.processID, p.turnaroundTime, p.waitingTime) ; 
         wait += p.waitingTime ; 
         turn += p.turnaroundTime ; 
     }
+    cout << endl ;
     cout << "Average turnaround time: " << (double)turn/processNumber << endl ; 
     cout << "Average waiting time: " << (double)wait/processNumber << endl ; 
     

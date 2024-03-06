@@ -10,21 +10,40 @@ struct Process
     int waitingTime ; 
     int turnaroundTime ; 
     int runTime ;
+    bool isDone ;
 } ; 
 
-bool compareProcess(Process a, Process b)
+bool compareProcessBurst(Process a, Process b)
 {
-    return (a.burstTime <= b.burstTime) && (a.arrivalTime <= b.arrivalTime) ; 
+    if( !a.isDone )
+        return (a.burstTime <= b.burstTime) ; 
+    else 
+    return false ;
+} 
+
+bool compareProcessArr(Process a, Process b)
+{
+    if( !a.isDone )
+        return (a.arrivalTime <= b.arrivalTime) ;
+    else 
+    return false ;
 } 
 
 int main()
 {
     freopen("inputAr.txt", "r", stdin) ; 
     int processNumber = 5 , i ; 
-    vector<Process> process(processNumber) ; 
+    vector<Process> process(processNumber+1) ;  //  processRun(processNumber)
+    Process temp;
     int value, wait = 0, turn = 0 ; 
     string curr_process ; 
     char ch ; 
+    
+    temp.turnaroundTime = temp.burstTime = 0 ; 
+    temp.waitingTime = 0 ;
+    temp.isDone = true ;  
+    temp.runTime = 0 ;
+    process.push_back(temp) ;
 
     cin >> processNumber ;
 
@@ -37,16 +56,29 @@ int main()
         cin >> value ; 
         process[i].arrivalTime = value ; 
         process[i].processID = i  ; 
+        process[i].isDone = false ; 
     }
 
-    sort(process.begin(), process.end(), compareProcess) ; 
+    sort(process.begin(), process.end(), compareProcessArr ) ; 
     
-    process[0].turnaroundTime = process[0].burstTime ; 
-    process[0].waitingTime = 0 ; 
-    for( i = 1 ; i <= processNumber ; i++ )
+
+    for( i = 0 ; i <= processNumber ; i++ )
     {
-        process[i].turnaroundTime = process[i].burstTime + process[i-1].turnaroundTime ; 
-        process[i].waitingTime = process[i].turnaroundTime - process[i].burstTime ; 
+        sort(process.begin()+i-1, process.end(), compareProcessBurst ) ;
+        if( process[i].arrivalTime <= process[i-1].runTime )
+        {
+            
+            process[i].turnaroundTime = process[i].burstTime + process[i-1].turnaroundTime ; 
+            process[i].waitingTime = process[i].turnaroundTime - process[i].burstTime ;
+            process[i].runTime = process[i-1].runTime + process[i].burstTime ;
+        } 
+        else
+        {
+            sort(process.begin()+i, process.end(), compareProcessArr ) ;
+            process[i].turnaroundTime = process[i].burstTime + process[i-1].turnaroundTime ; 
+            process[i].waitingTime = process[i].turnaroundTime - process[i].burstTime ;
+            process[i].runTime = process[i-1].runTime + process[i].burstTime ;
+        }
     }
 
     cout << "\nGantt chart:" << endl ; 
@@ -55,13 +87,13 @@ int main()
     {
         cout << "---P" << process[i].processID << "---|" ; 
     }
-    cout << endl << endl ; 
+    cout << endl  ; 
     printf("%-9d", 0) ; 
     for( auto p : process )
     {
         printf("%-9d", p.turnaroundTime) ; 
     }
-    cout << endl ; 
+    cout << endl << endl ; 
 
     printf("%s\t%s\t\t%s\n", "Process ID", "Turnaround Time", "Waiting Time") ; 
 
