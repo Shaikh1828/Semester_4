@@ -95,7 +95,11 @@ int main()
         printf("%-9d", r.end) ;
     }
     cout << endl ;
+<<<<<<< Updated upstream
    
+=======
+    
+>>>>>>> Stashed changes
     for( auto r : result )
     {
         for( i = 0 ; i < processNumber ; i++ )

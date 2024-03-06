@@ -45,7 +45,11 @@ int main()
         process[i].waitingTime = process[i].turnaroundTime - process[i].burstTime ; 
     }
 
+<<<<<<< Updated upstream
     cout << "\nGantt chart:" << endl << endl ; 
+=======
+    cout << "\nGantt chart:" << endl ; 
+>>>>>>> Stashed changes
     cout << "|" ; 
     for( i = 0 ; i < processNumber ; i++ )
     {
@@ -70,4 +74,3 @@ int main()
     cout << "Average turnaround time: " << (double)turn/processNumber << endl ; 
     cout << "Average waiting time: " << (double)wait/processNumber << endl ; 
 }
-
