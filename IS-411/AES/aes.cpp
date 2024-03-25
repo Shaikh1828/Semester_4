@@ -312,8 +312,7 @@ void addRoundKey( unsigned char* state, int roundNum )
 
 
 void encryption( unsigned char* message )
-{
-    
+{   
     expansionKey( key ) ;
     addRoundKey( message, 0 ) ;
 
@@ -375,15 +374,19 @@ void inverseMixColumn( unsigned char* state )
 
     for ( int i = 0; i < 16; i++ )
     {
-       if( i%4 == 0 )
+        if( i%4 == 0 )
             temp[i] = TableFor14[state[i]]^TableFor11[state[i+1]]^TableFor13[state[i+2]]^TableFor9[state[i+3]] ;
-       if( i%4 == 1 )
+        if( i%4 == 1 )
             temp[i] = TableFor14[state[i]]^TableFor11[state[i+1]]^TableFor13[state[i+2]]^TableFor9[state[i-1]] ;
-       if( i%4 == 2 )
+        if( i%4 == 2 )
             temp[i] = TableFor14[state[i]]^TableFor11[state[i+1]]^TableFor13[state[i-2]]^TableFor9[state[i-1]] ;
-       if( i%4 == 3 )
+        if( i%4 == 3 )
             temp[i] = TableFor14[state[i]]^TableFor11[state[i-3]]^TableFor13[state[i-2]]^TableFor9[state[i-1]] ;
-    }
+    }          
+                        //  14  11  13  9
+                        //   9  14  11  13
+                        //  13   9  14  11
+                        //  11  13   9  14
 
     for ( int i = 0; i < 16; i++ )
         state[i] = temp[i] ;
@@ -562,17 +565,20 @@ void write_file(string encrypted){
    cout<<endl;
    fclose(fp);
 }
-string read_file(){
-   FILE *fp;
+
+string read_file()
+{
+    FILE *fp;
     string encr;
     encr.resize(extendedLen+1);
     int i;
-   unsigned char encrypted[extendedLen];
-   fp=fopen("encrypted_text.txt","r+");
-    for( i=0;i<extendedLen;i++){
-      char character1, character2;
-      fscanf(fp,"%c%c",&character1,&character2);
-    unsigned int concatenated_value;
+    unsigned char encrypted[extendedLen];
+    fp=fopen("encrypted_text.txt","r+");
+    for( i=0;i<extendedLen;i++)
+    {
+        char character1, character2;
+        fscanf(fp,"%c%c",&character1,&character2);
+        unsigned int concatenated_value;
    
     // Convert characters to their respective hexadecimal values
     int digit1 = (character1 >= 'A' && character1 <= 'F') ? character1 - 'A' + 10 : character1 - '0';
@@ -582,24 +588,25 @@ string read_file(){
     concatenated_value = ((unsigned int)digit1 << 4) | (unsigned int)digit2;
     encrypted[i]=concatenated_value;
     }
-  fclose(fp);
-    for( i=0;i<extendedLen;i++){
-      encr[i]=encrypted[i];
+    fclose(fp);
+    for( i=0;i<extendedLen;i++)
+    {
+        encr[i]=encrypted[i];
     }
-   encr[i]='\0';
-   return encr;
-
+    encr[i]='\0';
+    return encr;
 }
 
 void write_dec_file(string decr,int len)
 {
-   FILE *fp;
-   fp=fopen("decrypted_text.txt","w");
-   for(int i=0;i<len;i++){
-      fprintf(fp,"%c",decr[i]);
-   }
-   fclose(fp);
-   cout<<endl;
+    FILE *fp;
+    fp=fopen("decrypted_text.txt","w");
+    for(int i=0;i<len;i++)
+    {
+        fprintf(fp,"%c",decr[i]);
+    }
+    fclose(fp);
+    cout<<endl;
 }
 
 int main()
