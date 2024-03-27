@@ -1,37 +1,19 @@
-#include <bits/stdc++.h>
-using namespace std ;
+#include<iostream>
+using namespace std;
+#include <fstream>
+#include <string>
+#include <algorithm>
+#include <iterator>
 
-#define roundNumber 10
-#define paddingCharacter '$'
-
-unsigned char key[] = "ShaikhulIslam" ;
-int extendedLen = 16 ;
-string mess ;
-void substitutionWord( unsigned char* input ) ;
-void rotationOfWord( unsigned char* input ) ;
-void expansionKey( unsigned char *originalKey ) ;
-void subBytes( unsigned char* state ) ;
-void cyclicLeftShiftRow( unsigned char* state ) ;
-void mixColumn( unsigned char* state ) ;
-void addRoundKey( unsigned char* state, int roundNum ) ;
-void encryption( unsigned char* message ) ;
-void addRoundKeyForDecryption( unsigned char* state, int roundNum ) ;
-void inverseCyclicShiftRows( unsigned char* state ) ;
-void inverseSubBites( unsigned char* state ) ;
-void inverseMixColumn( unsigned char* state ) ;
-void decryption( unsigned char* cipherText ) ;
-void printStateMatrix( unsigned char* state, int numOfVals ) ;
-void printDecryptTxt( unsigned char* text, int len ) ;
-string getEncryptedText( string inpt ) ;
-string getDecryptedText( string en_mess ) ;
-void write_file(string encrypted);
-string read_file();
-void write_dec_file(string decr,int len);
-
-
+string inputText;
+string inputForDecryption;
+char stateArray[16];
+string outputText;
+string decryptedText;
+unsigned char key[]="abcdefghojklmnop";
+unsigned char RoundKey[44][4];
 unsigned char roundConstant[10] = { 0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80, 0x1b, 0x36 } ;
 
-//for encoding
 unsigned char sBox[256] =
 {
 	0x63, 0x7C, 0x77, 0x7B, 0xF2, 0x6B, 0x6F, 0xC5, 0x30, 0x01, 0x67, 0x2B, 0xFE, 0xD7, 0xAB, 0x76,
@@ -50,7 +32,7 @@ unsigned char sBox[256] =
 	0x70, 0x3E, 0xB5, 0x66, 0x48, 0x03, 0xF6, 0x0E, 0x61, 0x35, 0x57, 0xB9, 0x86, 0xC1, 0x1D, 0x9E,
 	0xE1, 0xF8, 0x98, 0x11, 0x69, 0xD9, 0x8E, 0x94, 0x9B, 0x1E, 0x87, 0xE9, 0xCE, 0x55, 0x28, 0xDF,
 	0x8C, 0xA1, 0x89, 0x0D, 0xBF, 0xE6, 0x42, 0x68, 0x41, 0x99, 0x2D, 0x0F, 0xB0, 0x54, 0xBB, 0x16
-} ;
+};
 
 unsigned char inverseSbox[256] =
 {
@@ -72,7 +54,6 @@ unsigned char inverseSbox[256] =
 	0x17, 0x2B, 0x04, 0x7E, 0xBA, 0x77, 0xD6, 0x26, 0xE1, 0x69, 0x14, 0x63, 0x55, 0x21, 0x0C, 0x7D
 } ;
 
-
 unsigned char TableFor2[] =
 {
 	0x00,0x02,0x04,0x06,0x08,0x0a,0x0c,0x0e,0x10,0x12,0x14,0x16,0x18,0x1a,0x1c,0x1e,
@@ -93,7 +74,6 @@ unsigned char TableFor2[] =
 	0xfb,0xf9,0xff,0xfd,0xf3,0xf1,0xf7,0xf5,0xeb,0xe9,0xef,0xed,0xe3,0xe1,0xe7,0xe5
 } ;
 
-//for decoding
 
 unsigned char TableFor3[] = 
 {
@@ -114,7 +94,6 @@ unsigned char TableFor3[] =
 	0x3b,0x38,0x3d,0x3e,0x37,0x34,0x31,0x32,0x23,0x20,0x25,0x26,0x2f,0x2c,0x29,0x2a,
 	0x0b,0x08,0x0d,0x0e,0x07,0x04,0x01,0x02,0x13,0x10,0x15,0x16,0x1f,0x1c,0x19,0x1a
 } ;
-
 unsigned char TableFor9[256] =
 {
 	0x00,0x09,0x12,0x1b,0x24,0x2d,0x36,0x3f,0x48,0x41,0x5a,0x53,0x6c,0x65,0x7e,0x77,
@@ -193,437 +172,248 @@ unsigned char TableFor14[256] =
 	0x0c,0x02,0x10,0x1e,0x34,0x3a,0x28,0x26,0x7c,0x72,0x60,0x6e,0x44,0x4a,0x58,0x56,
 	0x37,0x39,0x2b,0x25,0x0f,0x01,0x13,0x1d,0x47,0x49,0x5b,0x55,0x7f,0x71,0x63,0x6d,
 	0xd7,0xd9,0xcb,0xc5,0xef,0xe1,0xf3,0xfd,0xa7,0xa9,0xbb,0xb5,0x9f,0x91,0x83,0x8d
-} ;
+};
+string takeInput(string str){
+	string input;
+	char c;
+	ifstream file( str );
+        file >> noskipws;
+   	while ( file >> c ) 
+   	    input += c;
+        file.close();
+        //cout <<input;
+        return input;
+}
 
-
-unsigned char modifiedKey[176] ;      //44*4 = 176
-
-
-void substitutionWord( unsigned char* input )
+void substitutionWord( char* input )
 {
     for (int i = 0; i <= 3; i++)
         input[i] = sBox[input[i]] ;
 }
-
-void rotationOfWord( unsigned char* input )
-{
-    unsigned char temp = input[0] ;
-
-    for( int i = 0; i <= 2; i++ )
-        input[i] = input[i+1];
-
-    input[3]= temp;
-}
-
-void expansionKey( unsigned char *originalKey )
-{
-    int idx ;
-    for ( idx = 0; idx <= 15; idx++ ) 
-        modifiedKey[idx] = originalKey[idx] ; 
-
-    while ( idx <= 175 )
-    {
-        unsigned char prevWord[4] ;
-        for ( int i = 0; i < 4; i++ )
-            prevWord[i] = modifiedKey[idx + i - 4] ; 
-
-        if( (idx%16) == 0 )
-        {
-            rotationOfWord( prevWord ) ;
-            substitutionWord( prevWord ) ;
-            prevWord[0] ^= roundConstant[ (idx/16) - 1 ] ;
-        }
-
-        for ( int k = 0; k < 4; k++ )
-            modifiedKey[idx+k] = prevWord[k]^modifiedKey[idx-16+k] ;
-        idx += 4 ;
-    }
-
-}
-
-void subBytes( unsigned char* state )
-{
-    for ( int i = 0; i < 16; i++ )
-        state[i] = sBox[state[i]] ;
-}
-
-void cyclicLeftShiftRow( unsigned char* state )
-{
-    unsigned char temp[16] ;
-
-    temp[0] = state[0] ;
-    temp[4] = state[4] ;
-    temp[8] = state[8] ;
-    temp[12] = state[12] ;
-    //zero cyclic left shift above
-
-    temp[13] = state[1] ;
-    temp[1] = state[5] ;
-    temp[5] = state[9] ;
-    temp[9] = state[13] ;
-    //cyclic left shift by one above.
-
-    temp[10] = state[2] ;
-    temp[14] = state[6] ;
-    temp[2] = state[10] ;
-    temp[6] = state[14] ;
-    //cyclic left shift by two above.
-
-    temp[7] = state[3] ;
-    temp[11] = state[7] ;
-    temp[15] = state[11] ;
-    temp[3] = state[15] ;
-    //cyclic left shift by three above.
-
-
-    for ( int i = 0; i < 16; i++ )
-        state[i] = temp[i] ;
-}
-
-void mixColumn( unsigned char* state )
-{
-   unsigned char temp[16] ;
-
-   for ( int i = 0; i < 16; i++ )
-   {
-       if( i%4 == 0 )
-            temp[i] = TableFor2[state[i]]^TableFor3[state[i+1]]^state[i+2]^state[i+3] ;
-       if( i%4 == 1 )
-            temp[i] = TableFor2[state[i]]^TableFor3[state[i+1]]^state[i+2]^state[i-1] ;
-       if( i%4 == 2 )
-            temp[i] = TableFor2[state[i]]^TableFor3[state[i+1]]^state[i-1]^state[i-2] ;
-       if( i%4 == 3 )
-            temp[i] = TableFor2[state[i]]^TableFor3[state[i-3]]^state[i-1]^state[i-2] ;
-   }
-                        // s0' = s0.T2 + s1.T3 + s2 + s3
-                        // s1' = s0 + s1.T2 + s2.T3 + s3
-                        // s2' = s0 + s1 + s2.T2 + s3.T3
-                        // s3' = s0.T3 + s1 + s2 + s3.T2
-
-   for ( int i = 0; i < 16; i++ )
-        state[i] = temp[i] ;
-}
-
-void addRoundKey( unsigned char* state, int roundNum )
-{
-    for ( int i = 0; i < 16; i++ )
-        state[i] ^= modifiedKey[roundNum*16+i] ;
-}
-
-
-void encryption( unsigned char* message )
-{   
-    expansionKey( key ) ;
-    addRoundKey( message, 0 ) ;
-
-    for ( int i = 1; i <= roundNumber; i++ )
-    {
-        subBytes( message ) ;
-        cyclicLeftShiftRow( message ) ;
-
-        if( i != roundNumber )
-            mixColumn( message ) ;
-
-        addRoundKey( message, i ) ;
-    }
-}
-
-void addRoundKeyForDecryption( unsigned char* state, int roundNum )
-{
-    for ( int i = 0; i < 16; i++ )
-        state[i] ^= modifiedKey[160-roundNum*16+i] ;     //coming from the back side this time.
-}
-
-void inverseCyclicShiftRows( unsigned char* state )
-{
-    unsigned char temp[16] ;
-
-    temp[0] = state[0] ;
-    temp[4] = state[4] ;
-    temp[8] = state[8] ;
-    temp[12] = state[12] ;
-
-    temp[5] = state[1] ;
-    temp[9] = state[5] ;
-    temp[13] = state[9] ;
-    temp[1] = state[13] ;
-
-    temp[10] = state[2] ;
-    temp[14] = state[6] ;  
-    temp[2] = state[10] ;
-    temp[6] = state[14] ;
-
-    temp[15] = state[3] ;
-    temp[3] = state[7] ;
-    temp[7] = state[11] ; 
-    temp[11] = state[15] ;
-
-    for ( int i = 0; i < 16; i++ )
-        state[i] = temp[i] ;
-}
-
-void inverseSubBites( unsigned char* state )
-{
-    for ( int i = 0; i < 16; i++ )
-        state[i] = inverseSbox[state[i]] ;
-}
-
-void inverseMixColumn( unsigned char* state )
-{
-    unsigned char temp[16] ;
-
-    for ( int i = 0; i < 16; i++ )
-    {
-        if( i%4 == 0 )
-            temp[i] = TableFor14[state[i]]^TableFor11[state[i+1]]^TableFor13[state[i+2]]^TableFor9[state[i+3]] ;
-        if( i%4 == 1 )
-            temp[i] = TableFor14[state[i]]^TableFor11[state[i+1]]^TableFor13[state[i+2]]^TableFor9[state[i-1]] ;
-        if( i%4 == 2 )
-            temp[i] = TableFor14[state[i]]^TableFor11[state[i+1]]^TableFor13[state[i-2]]^TableFor9[state[i-1]] ;
-        if( i%4 == 3 )
-            temp[i] = TableFor14[state[i]]^TableFor11[state[i-3]]^TableFor13[state[i-2]]^TableFor9[state[i-1]] ;
-    }          
-                        //  14  11  13  9
-                        //   9  14  11  13
-                        //  13   9  14  11
-                        //  11  13   9  14
-
-    for ( int i = 0; i < 16; i++ )
-        state[i] = temp[i] ;
-}
-
-void decryption( unsigned char* cipherText )
-{
-    expansionKey( key ) ;
-    addRoundKeyForDecryption( cipherText, 0 ) ;
-
-    for ( int i = 1; i <= roundNumber; i++ )
-    {
-        inverseCyclicShiftRows( cipherText ) ;
-        inverseSubBites( cipherText ) ;
-
-        addRoundKeyForDecryption( cipherText, i );
-
-        if( i != roundNumber )
-            inverseMixColumn( cipherText ) ;
-    }
-
-}
-
-// void printStateMatrix( unsigned char* state, int numOfVals )
-// {
-//     for ( int i = 0; i < numOfVals-1; i++ )
-//     {
-//         printf("%X ", state[i] ) ;
-//     }
-// }
-
-// void printDecryptTxt( unsigned char* text, int len )
-// {
-//     for ( int i = 0; i < len-1; i++ )
-//     {
-//         //printf("%c", text[i] ) ;
-//         mess[i] = text[i] ;
-//         if( text[i+1]==paddingCharacter && text[i+2]==paddingCharacter )
-//         {
-//             text[i+1] = '\0';
-//             mess[i+1] = '\0';
-//             mess.resize(i+1) ;
-//             break ;
-//         }
-//     }
-// }
-
-// void printEncrypt( unsigned char* text, int len )
-// {
-//     for ( int i = 0; i < len-1; i++ )
-//     {
-//         //printf("%c", text[i] ) ;
-
-//         if( text[i+1]==paddingCharacter && text[i+2]==paddingCharacter )
-//         {
-//             text[i+1] = '\0';
-//             break ;
-//         }
-//     }
-// }
-
-string getEncryptedText( string inpt )
-{
-    int len = inpt.length() ;
-
-    char inputText[len] ;
-    for( int i=0; i<len; i++) inputText[i] = inpt[i] ;  
-    
-    //expansionKey( key ) ;
-
-    int txtLen = sizeof( inputText ) ;
-    // int extendedLen ;
-
-    if( (txtLen%16) != 0 )
-        extendedLen = txtLen + ( 16 - (txtLen%16) ) ;
-    else 
-        extendedLen = txtLen ;
-
-    //padding the extra bytes
-
-    unsigned char encryptedTxt[extendedLen+1], man[extendedLen+1] ;
-
-	for( int i=0; i<extendedLen; i++ )
-    {
-  	    if( i < txtLen )
-            encryptedTxt[i] = inputText[i] ;
-  	    else
-            encryptedTxt[i] = paddingCharacter ;
-        if( i+1 == extendedLen )
-            encryptedTxt[i+1] = '\0';
-    }
-
-
-    for( int i=0; i<extendedLen; i+=16 )
-    {
-        unsigned char temp[16] ;
-		for( int j=0; j<16; j++ ) 
-            temp[j] = encryptedTxt[i+j] ;
-
-		encryption( temp ) ;
+void keyExpansion(){
+	char temp[4];
+	for(int i=0;i<4;i++)
+	    for(int j=0;j<4;j++)
+	        RoundKey[i][j]=key[4*i+j];
+	for(int i=0;i<44;i++){
+		for(int j=0;j<4;j++)
+			temp[j]=RoundKey[i-1][j];
+		if(i%4==0){
+		    char t=temp[0];
+        	for(int j=0;j<3;j++)
+			temp[j]=temp[j+1];
+		    temp[3]=t;
+		    substitutionWord(temp); 
+		    temp[0]^=roundConstant[(i/4)-1];
+		}
 		
-        for( int j=0; j<16; j++ ) 
-            encryptedTxt [i+j] = temp[j] ;
+		for(int j=0;j<4;j++)
+		    RoundKey[i][j]=RoundKey[i-4][j]^temp[j];
+	}        	
+
+}
+
+void addRoundKey(int round){
+	int i=0,j=0;
+	for(i;i<4;i++,j++)	
+		stateArray[i]^=RoundKey[4*round][j];
+	j=0;
+	for(i;i<8;i++,j++)	
+		stateArray[i]^=RoundKey[4*round+1][j];
+	j=0;
+	for(i;i<12;i++,j++)	
+		stateArray[i]^=RoundKey[4*round+2][j];
+	j=0;
+	for(i;i<16;i++,j++)	
+		stateArray[i]^=RoundKey[4*round+3][j];	
+}
+
+void subByte(){
+	for(int i=0;i<16;i++)
+		stateArray[i]=sBox[stateArray[i]];
+
+}
+
+void shiftRows(){
+	char temp[16];
+	int prev;
+	for(int i=0;i<16;i+=4)
+	   temp[i]=stateArray[i];
+	
+	prev=13;
+	for(int i=1;i<16;i+=4){
+	   temp[prev]=stateArray[i];
+	   prev=i;	
 	}
-
-    //cout << sizeof(encryptedTxt) << endl ;
-    mess.resize(extendedLen+1);
-
-    for ( int i = 0; i <= extendedLen; i++)
-    {
-        mess[i] = encryptedTxt[i] ;
-        man[i] = mess[i] ;
-    }
-
-    // cout << "Cipher Text: - " ;
-    // printStateMatrix( man, sizeof(encryptedTxt) ) ;
-    // cout << endl ;
-    // printEncrypt( man, extendedLen ) ;
-    // cout << endl ;
-
-    return mess ;
+	
+	temp[10] = stateArray[2] ;
+        temp[14] = stateArray[6] ;
+        temp[2] = stateArray[10] ;
+        temp[6] = stateArray[14] ;
+    
+        temp[7] = stateArray[3] ;
+        temp[11] = stateArray[7] ;
+        temp[15] = stateArray[11] ;
+        temp[3] = stateArray[15] ;
+	      
+	
+        for(int i=0;i<16;i++ )
+          stateArray[i]=temp[i] ;
 }
 
-string getDecryptedText( string en_mess )
-{
-    unsigned char man[extendedLen+1] ;
-    for ( int i = 0; i <= extendedLen; i++)
-    {
-        man[i] = en_mess[i] ;
-    }
-    //cout << en_mess << endl ;
-    unsigned char decryptedTxt[extendedLen+1] ;
-
-    for ( int i = 0; i < extendedLen; i += 16 )
-    {
-        unsigned char temp[16] ;
-
-        for( int j=0; j<16; j++ )
-            temp[j] = man[i+j] ;
-
-		decryption( temp ) ;
-
-		for( int j=0; j<16; j++ )
-            decryptedTxt[i+j] = temp[j] ;
-        if( i+16 == extendedLen )
-            decryptedTxt[i+16] = '\0' ;
-    }
-
-    string decr;
-    decr.resize(extendedLen+1);
-    for( int i=0; i < extendedLen; i++ )
-    {
-        decr[i] = decryptedTxt[i];
-        if( decryptedTxt[i+1]==paddingCharacter && decryptedTxt[i+2]==paddingCharacter )
-        {
-            decr[i+1] = '\0';
-            decr.resize(i+1) ;
-            write_dec_file(decr,i+1);
-            break ;
-        }
-    }
-    //  decr[extendedLen]='\0';
-    // cout << "Decrypted Text:- " << decr ;
-    // cout << endl ;
-    return decr ;
+void mixColumn(){
+	char temp[16];
+	for ( int i = 0; i < 16; i++ ){
+       		if(i%4==0)
+            		temp[i] = TableFor2[stateArray[i]]^TableFor3[stateArray[i+1]]^stateArray[i+2]^stateArray[i+3] ;
+       		else if(i%4==1)
+            		temp[i] = stateArray[i-1]^TableFor2[stateArray[i]]^TableFor3[stateArray[i+1]]^stateArray[i+2] ;
+       		else if(i%4==2)
+            		temp[i] = stateArray[i-2]^stateArray[i-1]^TableFor2[stateArray[i]]^TableFor3[stateArray[i+1]] ;
+       		else if(i%4==3)
+            		temp[i] = TableFor3[stateArray[i-3]]^stateArray[i-2]^stateArray[i-1]^TableFor2[stateArray[i]] ;
+	}   
+	for(int i=0;i<16;i++ )
+          stateArray[i]=temp[i] ;
+}
+void encrypt(){
+	int k=0;
+	keyExpansion();
+	//for(int i=0;i<44;i++,k++)
+	  // for(int j=0;j<4;j++)
+		//cout << RoundKey[i][j];
+	
+	addRoundKey(0);
+	for(int i=1;i<=10;i++){
+		subByte();
+		shiftRows();
+		if(i!=10)
+		  mixColumn();
+		addRoundKey(i);
+	}
+	outputText+=stateArray;
 }
 
-void write_file(string encrypted)
-{
-    unsigned char msg[extendedLen];
-    for(int i=0; i<extendedLen; i++)
-        msg[i]=encrypted[i];
-    FILE *fp;
-    fp = fopen("encrypted_text.txt","w+");
-
-    for(int i=0;i<extendedLen;i++)
-    {
-        fprintf(fp,"%02X",msg[i]);
-        //printf("%02X ",msg[i]);
-    }
-    fclose(fp);
+void writeOutput(string str){
+	ofstream file;
+	file.open(str);
+	file << outputText <<endl;
+	file.close();
 }
 
-string read_file()
-{
-    FILE *fp;
-    string encr;
-    encr.resize(extendedLen+1);
-    int i;
-    unsigned char encrypted[extendedLen];
-    fp = fopen("encrypted_text.txt","r+");
-    for( i=0; i<extendedLen; i++ )
-    {
-        char character1, character2;
-        fscanf(fp,"%c%c", &character1, &character2);
-        unsigned int concatenated_value;
-   
-        // Convert characters to their respective hexadecimal values
-        int digit1 = (character1 >= 'A' && character1 <= 'F') ? character1 - 'A' + 10 : character1 - '0';
-        int digit2 = (character2 >= 'A' && character2 <= 'F') ? character2 - 'A' + 10 : character2 - '0';
-
-        // Combine the hexadecimal digits
-        concatenated_value = ((unsigned int) digit1 << 4) | (unsigned int) digit2;
-        encrypted[i] = concatenated_value;
-    }
-
-    fclose(fp);
-
-    for( i=0; i<extendedLen; i++)
-    {
-        encr[i]=encrypted[i];
-    }
-    encr[i]='\0';
-    return encr;
+void addRoundKeyForDecryption(int round){
+	int i=0;
+	for(i;i<4;i++)	
+		stateArray[i]^=RoundKey[44-(4*round)][3-i];
+	for(i;i<8;i++)	
+		stateArray[i]^=RoundKey[44-(4*round+1)][3-i];
+	for(i;i<12;i++)	
+		stateArray[i]^=RoundKey[44-(4*round+2)][3-i];
+	for(i;i<16;i++)	
+		stateArray[i]^=RoundKey[44-(4*round+3)][3-i];	
 }
 
-void write_dec_file(string decr,int len)
+void inverseShiftRows( )
 {
-    FILE *fp;
-    fp=fopen("decrypted_text.txt","w");
-    for(int i=0;i<len;i++)
-    {
-        fprintf(fp,"%c",decr[i]);
-    }
-    fclose(fp);
-    cout<<endl;
+    char temp[16] ;
+
+    temp[0] = stateArray[0] ;
+    temp[4] = stateArray[4] ;
+    temp[8] = stateArray[8] ;
+    temp[12] = stateArray[12] ;
+
+    temp[5] = stateArray[1] ;
+    temp[9] = stateArray[5] ;
+    temp[13] = stateArray[9] ;
+    temp[1] = stateArray[13] ;
+
+    temp[10] = stateArray[2] ;
+    temp[14] = stateArray[6] ;  
+    temp[2] = stateArray[10] ;
+    temp[6] = stateArray[14] ;
+
+    temp[15] = stateArray[3] ;
+    temp[3] = stateArray[7] ;
+    temp[7] = stateArray[11] ; 
+    temp[11] = stateArray[15] ;
+
+    for ( int i = 0; i < 16; i++ )
+        stateArray[i] = temp[i] ;
 }
 
-int main()
+void inverseSubByte()
 {
-    string inpt, encr ;
-    cout << "Input : " ;
-    getline( cin, inpt );
-    encr = getEncryptedText( inpt ) ;
-    write_file(encr);
-    string decr;
-    decr = read_file();
-    decr = getDecryptedText( decr ) ;
-    cout << "Decrypted text : " << decr << endl;
+    for ( int i = 0; i < 16; i++ )
+        stateArray[i] = inverseSbox[stateArray[i]] ;
+}
+
+void inverseMixColumn()
+{
+    char temp[16] ;
+
+    for ( int i = 0; i < 16; i++ )
+    {
+       if( i%4 == 0 )
+            temp[i] = TableFor14[stateArray[i]]^TableFor11[stateArray[i+1]]^TableFor13[stateArray[i+2]]^TableFor9[stateArray[i+3]] ;
+       if( i%4 == 1 )
+            temp[i] = TableFor14[stateArray[i]]^TableFor11[stateArray[i+1]]^TableFor13[stateArray[i+2]]^TableFor9[stateArray[i-1]] ;
+       if( i%4 == 2 )
+            temp[i] = TableFor14[stateArray[i]]^TableFor11[stateArray[i+1]]^TableFor13[stateArray[i-2]]^TableFor9[stateArray[i-1]] ;
+       if( i%4 == 3 )
+            temp[i] = TableFor14[stateArray[i]]^TableFor11[stateArray[i-3]]^TableFor13[stateArray[i-2]]^TableFor9[stateArray[i-1]] ;
+    }
+
+    for ( int i = 0; i < 16; i++ )
+        stateArray[i] = temp[i] ;
+}
+void decrypt(){
+	keyExpansion() ;
+        addRoundKeyForDecryption(0) ;
+
+    	for (int i=1;i <= 10;i++){
+	        inverseShiftRows() ;
+	        inverseSubByte() ;
+	        addRoundKeyForDecryption(i);
+		if(i!=10)
+	            inverseMixColumn() ;
+	}
+	decryptedText+=stateArray;
+}
+int main(){
+	inputText=takeInput("decrypted_text.txt");		//read the whole input text file
+
+	int len=inputText.size();
+	if(len%16!=0)
+	   for(int i=0;i<len%16;i++)
+		inputText+='$';				//did padding if not a multiple of 16
+	len=inputText.size();
+	int i,j=0;
+	while(j<len){
+	   for(i=0;i<16;i++)	
+		stateArray[i]=inputText[j+i];
+	   j+=i;
+	   //cout <<stateArray;
+	   encrypt();
+	}
+	writeOutput("encrypted_text.txt");
+	
+	inputForDecryption=takeInput("encrypted_text.txt");
+	len=inputForDecryption.size();
+	if(len%16!=0)
+	   for(int i=0;i<len%16;i++)
+		inputText+='$';				//did padding if not a multiple of 16
+	len=inputForDecryption.size();
+	j=0;
+	while(j<len){	
+	   for(i=0;i<16;i++)	
+		stateArray[i]=inputForDecryption[j+i];
+	   j+=i;
+	   cout <<stateArray<<endl;
+	   decrypt();
+	}
+	cout << decryptedText;
+	//input("encrypted.txt");
+	//decrypt();
+	//match();
+	return 0;
 }

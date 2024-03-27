@@ -35,7 +35,7 @@ int main()
     char ch ;
 
     cin >> processNumber ;
-    for(i = 0 ;i<processNumber ;i++)
+    for( i = 0 ; i<processNumber ; i++ )
     {
         cin >> process[i].burstTime ;
         cin >> process[i].priority ;
@@ -74,6 +74,7 @@ int main()
                 process[i].remainingTime -= quantam ;
                 curr_time = e ;
             }
+
             temp.processID = process[i].processID ;
             temp.start = s ;
             temp.end = e ;
@@ -95,11 +96,7 @@ int main()
         printf("%-9d", r.end) ;
     }
     cout << endl ;
-<<<<<<< Updated upstream
-   
-=======
     
->>>>>>> Stashed changes
     for( auto r : result )
     {
         for( i = 0 ; i < processNumber ; i++ )
@@ -115,6 +112,7 @@ int main()
     {
         process[i].waitingTime = process[i].turnaroundTime-process[i].burstTime ;
     }
+
     printf("\nPID\tTurn\tWait\n") ;
     for( i = 0 ; i < processNumber ; i++ )
     {
