@@ -7,6 +7,7 @@ using namespace std ;
 unsigned char key[] = "ShaikhulIslam" ;
 int extendedLen = 16 ;
 string mess ;
+
 void substitutionWord( unsigned char* input ) ;
 void rotationOfWord( unsigned char* input ) ;
 void expansionKey( unsigned char *originalKey ) ;
@@ -15,13 +16,16 @@ void cyclicLeftShiftRow( unsigned char* state ) ;
 void mixColumn( unsigned char* state ) ;
 void addRoundKey( unsigned char* state, int roundNum ) ;
 void encryption( unsigned char* message ) ;
+
 void addRoundKeyForDecryption( unsigned char* state, int roundNum ) ;
 void inverseCyclicShiftRows( unsigned char* state ) ;
 void inverseSubBites( unsigned char* state ) ;
 void inverseMixColumn( unsigned char* state ) ;
 void decryption( unsigned char* cipherText ) ;
+
 void printStateMatrix( unsigned char* state, int numOfVals ) ;
 void printDecryptTxt( unsigned char* text, int len ) ;
+
 string getEncryptedText( string inpt ) ;
 string getDecryptedText( string en_mess ) ;
 void write_file(string encrypted);
@@ -196,7 +200,7 @@ unsigned char TableFor14[256] =
 } ;
 
 
-unsigned char modifiedKey[176] ;      //44*4 = 176
+unsigned char modifiedKey[176] ;      //   44*4 = 176
 
 
 void substitutionWord( unsigned char* input )
@@ -255,26 +259,21 @@ void cyclicLeftShiftRow( unsigned char* state )
     temp[4] = state[4] ;
     temp[8] = state[8] ;
     temp[12] = state[12] ;
-    //zero cyclic left shift above
 
     temp[13] = state[1] ;
     temp[1] = state[5] ;
     temp[5] = state[9] ;
     temp[9] = state[13] ;
-    //cyclic left shift by one above.
-
+  
     temp[10] = state[2] ;
     temp[14] = state[6] ;
     temp[2] = state[10] ;
     temp[6] = state[14] ;
-    //cyclic left shift by two above.
 
     temp[7] = state[3] ;
     temp[11] = state[7] ;
     temp[15] = state[11] ;
     temp[3] = state[15] ;
-    //cyclic left shift by three above.
-
 
     for ( int i = 0; i < 16; i++ )
         state[i] = temp[i] ;
@@ -289,16 +288,16 @@ void mixColumn( unsigned char* state )
        if( i%4 == 0 )
             temp[i] = TableFor2[state[i]]^TableFor3[state[i+1]]^state[i+2]^state[i+3] ;
        if( i%4 == 1 )
-            temp[i] = TableFor2[state[i]]^TableFor3[state[i+1]]^state[i+2]^state[i-1] ;
+            temp[i] = state[i-1]^TableFor2[state[i]]^TableFor3[state[i+1]]^state[i+2] ;
        if( i%4 == 2 )
-            temp[i] = TableFor2[state[i]]^TableFor3[state[i+1]]^state[i-1]^state[i-2] ;
+            temp[i] = state[i-2]^state[i-1]^TableFor2[state[i]]^TableFor3[state[i+1]] ;
        if( i%4 == 3 )
-            temp[i] = TableFor2[state[i]]^TableFor3[state[i-3]]^state[i-1]^state[i-2] ;
+            temp[i] = TableFor3[state[i-3]]^state[i-1]^state[i-2]^TableFor2[state[i]] ;
    }
-                        // s0' = s0.T2 + s1.T3 + s2 + s3
-                        // s1' = s0 + s1.T2 + s2.T3 + s3
-                        // s2' = s0 + s1 + s2.T2 + s3.T3
-                        // s3' = s0.T3 + s1 + s2 + s3.T2
+                        // s0' =  s0.T2 + s1.T3 + s2 + s3
+                        // s1' =  s0 + s1.T2 + s2.T3 + s3
+                        // s2' =  s0 + s1 + s2.T2 + s3.T3
+                        // s3' =  s0.T3 + s1 + s2 + s3.T2
 
    for ( int i = 0; i < 16; i++ )
         state[i] = temp[i] ;
@@ -410,43 +409,6 @@ void decryption( unsigned char* cipherText )
 
 }
 
-// void printStateMatrix( unsigned char* state, int numOfVals )
-// {
-//     for ( int i = 0; i < numOfVals-1; i++ )
-//     {
-//         printf("%X ", state[i] ) ;
-//     }
-// }
-
-// void printDecryptTxt( unsigned char* text, int len )
-// {
-//     for ( int i = 0; i < len-1; i++ )
-//     {
-//         //printf("%c", text[i] ) ;
-//         mess[i] = text[i] ;
-//         if( text[i+1]==paddingCharacter && text[i+2]==paddingCharacter )
-//         {
-//             text[i+1] = '\0';
-//             mess[i+1] = '\0';
-//             mess.resize(i+1) ;
-//             break ;
-//         }
-//     }
-// }
-
-// void printEncrypt( unsigned char* text, int len )
-// {
-//     for ( int i = 0; i < len-1; i++ )
-//     {
-//         //printf("%c", text[i] ) ;
-
-//         if( text[i+1]==paddingCharacter && text[i+2]==paddingCharacter )
-//         {
-//             text[i+1] = '\0';
-//             break ;
-//         }
-//     }
-// }
 
 string getEncryptedText( string inpt )
 {
@@ -501,12 +463,6 @@ string getEncryptedText( string inpt )
         man[i] = mess[i] ;
     }
 
-    // cout << "Cipher Text: - " ;
-    // printStateMatrix( man, sizeof(encryptedTxt) ) ;
-    // cout << endl ;
-    // printEncrypt( man, extendedLen ) ;
-    // cout << endl ;
-
     return mess ;
 }
 
@@ -517,7 +473,7 @@ string getDecryptedText( string en_mess )
     {
         man[i] = en_mess[i] ;
     }
-    //cout << en_mess << endl ;
+    
     unsigned char decryptedTxt[extendedLen+1] ;
 
     for ( int i = 0; i < extendedLen; i += 16 )
@@ -548,9 +504,7 @@ string getDecryptedText( string en_mess )
             break ;
         }
     }
-    //  decr[extendedLen]='\0';
-    // cout << "Decrypted Text:- " << decr ;
-    // cout << endl ;
+    
     return decr ;
 }
 
@@ -576,6 +530,7 @@ string read_file()
     string encr;
     encr.resize(extendedLen+1);
     int i;
+    int digit1 , digit2 ;
     unsigned char encrypted[extendedLen];
     fp = fopen("encrypted_text.txt","r+");
     for( i=0; i<extendedLen; i++ )
@@ -584,11 +539,9 @@ string read_file()
         fscanf(fp,"%c%c", &character1, &character2);
         unsigned int concatenated_value;
    
-        // Convert characters to their respective hexadecimal values
         int digit1 = (character1 >= 'A' && character1 <= 'F') ? character1 - 'A' + 10 : character1 - '0';
         int digit2 = (character2 >= 'A' && character2 <= 'F') ? character2 - 'A' + 10 : character2 - '0';
 
-        // Combine the hexadecimal digits
         concatenated_value = ((unsigned int) digit1 << 4) | (unsigned int) digit2;
         encrypted[i] = concatenated_value;
     }

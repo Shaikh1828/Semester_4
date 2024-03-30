@@ -55,10 +55,10 @@ int main()
     }
     cout << endl << endl ; 
 
-    printf("%s\t%s\t\t%s\t\t%s\n", "Process ID", "Turnaround Time", "Waiting Time", "Priority") ; 
+    printf("%s\t%s\t\t%s\t%s\n", "Process ID", "Turnaround Time", "Waiting Time", "Priority") ; 
     for( auto p : process )
     {
-        printf("P%d %20d %23d %20d\n", p.processID, p.turnaroundTime, p.waitingTime, p.priority) ; 
+        printf("P%d %20d %20d %17d\n", p.processID, p.turnaroundTime, p.waitingTime, p.priority) ; 
         wait += p.waitingTime ; 
         turn += p.turnaroundTime ; 
     }

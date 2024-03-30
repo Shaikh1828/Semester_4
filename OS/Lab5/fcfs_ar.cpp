@@ -23,7 +23,6 @@ int main()
 
     int processNumber , i, value, turn_time_sum = 0, wait_time_sum = 0 ;
     vector<Process> processes ;
-    
     Process prs ;
 
     cin >> processNumber ;
