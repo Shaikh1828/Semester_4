@@ -1,4 +1,3 @@
-
 #include<bits/stdc++.h>
 using namespace std;
 
@@ -19,29 +18,32 @@ int main()
         arrivalTime.push_back(c);
     }
 
-// sorting based on priority
+    // sorting based on priority
 
     vector<int> index_sorted(numProcesses);
-    for (int i = 0; i < numProcesses; i++) {
+    for (int i = 0; i < numProcesses; i++) 
+    {
         index_sorted[i] = i;
     }
 
     // Sorting based on priority and arrival time
     int temp = 0;
-    for (int i = 0; i < numProcesses; i++) {
-        for (int j = i + 1; j < numProcesses; j++) {
-
-            if ((arrivalTime[index_sorted[i]] >= arrivalTime[index_sorted[j]] || arrivalTime[index_sorted[j]] < temp) &&
-                priority[index_sorted[i]] < priority[index_sorted[j]]) {
+    for (int i = 0; i < numProcesses; i++) 
+    {
+        for (int j = i + 1; j < numProcesses; j++) 
+        {
+            if ( (arrivalTime[index_sorted[i]] >= arrivalTime[index_sorted[j]] || arrivalTime[index_sorted[j]] < temp) &&
+                priority[index_sorted[i]] < priority[index_sorted[j]] ) 
+            {
                 swap(index_sorted[i], index_sorted[j]);
             }
         }
-        temp = max(temp, arrivalTime[index_sorted[i]])+ burstTime[index_sorted[i]];
+        temp = max( temp, arrivalTime[index_sorted[i]] ) + burstTime[index_sorted[i]];
     }
 
     for(int i=1; i<numProcesses; i++)
     {
-        if(priority[index_sorted[i]]== priority[index_sorted[i-1]] && index_sorted[i-1] > index_sorted[i])
+        if( priority[index_sorted[i]] == priority[index_sorted[i-1]] && index_sorted[i-1] > index_sorted[i] )
         {
             swap(index_sorted[i], index_sorted[i-1]);
         }
@@ -71,11 +73,11 @@ int main()
     cout << "|" ;
     for(int i=0; i<numProcesses; i++)
     {
-      if(i==0)
-      {
-        cout << startTime[i] << "|---p" << index_sorted[i]+1 << "---|" << finishTime[i] ;
-      }
-      else if(startTime[i]==finishTime[i-1])
+        if(i==0)
+        {
+            cout << startTime[i] << "|---p" << index_sorted[i]+1 << "---|" << finishTime[i] ;
+        }
+        else if(startTime[i]==finishTime[i-1])
         {
         cout << "|---p" << index_sorted[i]+1 << "---|" << finishTime[i] ;
         }
