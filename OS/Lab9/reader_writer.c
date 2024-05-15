@@ -4,8 +4,8 @@
 #include <unistd.h>
 #include <semaphore.h>
 
-#define NUM_READERS 5
-#define NUM_WRITERS 1
+#define reader_num 5
+#define writer_num 1
 
 sem_t mutex, rw_mutex;
 int readers_count = 0;
@@ -19,29 +19,29 @@ void destroy_semaphores();
 
 int main() 
 {
-    pthread_t readers[NUM_READERS], writers[NUM_WRITERS];
-    int reader_ids[NUM_READERS], writer_ids[NUM_WRITERS];
+    pthread_t readers[reader_num], writers[writer_num];
+    int reader_ids[reader_num], writer_ids[writer_num];
     
     init_semaphores();
     
-    for (int i = 0; i < NUM_READERS; i++) 
+    for (int i = 0; i < reader_num; i++) 
     {
         reader_ids[i] = i + 1;
         pthread_create(&readers[i], NULL, reader, &reader_ids[i]);
     }
     
-    for (int i = 0; i < NUM_WRITERS; i++) 
+    for (int i = 0; i < writer_num; i++) 
     {
         writer_ids[i] = i + 1;
         pthread_create(&writers[i], NULL, writer, &writer_ids[i]);
     }
     
-    for (int i = 0; i < NUM_READERS; i++) 
+    for (int i = 0; i < reader_num; i++) 
     {
         pthread_join(readers[i], NULL);
     }
     
-    for (int i = 0; i < NUM_WRITERS; i++) 
+    for (int i = 0; i < writer_num; i++) 
     {
         pthread_join(writers[i], NULL);
     }
