@@ -1,131 +1,60 @@
 #include<bits/stdc++.h>
 using namespace std;
-
-int main()
-{
-    int numProcesses;
-    vector<int> burstTime, priority, arrivalTime;
-    freopen("input2.txt","r",stdin);
-
-    cin >> numProcesses;
-    
-    for(int i=0; i<numProcesses; i++)
-    {
-        int a, b, c;
-        cin >> a >> b >> c;
-        burstTime.push_back(a);
-        priority.push_back(b);
-        arrivalTime.push_back(c);
+struct Process{
+    int process_id;
+    int burst_time;
+    int priority;
+    int waiting_time;
+    int turnaround_time;
+};
+bool compareProcess(Process a,Process b);
+int main(){
+    freopen("input.txt","r",stdin);
+    int process_num=5,i;
+    vector<Process> process(process_num);
+    int value,wait=0,turn=0;
+    string curr_process;
+    char ch;
+    for(i=0;i<process_num;i++){
+        cin>>value;
+        process[i].burst_time=value;
+        cin>>value;
+        process[i].priority=value;
+        process[i].process_id=i+1;
     }
-
-    // sorting based on priority
-
-    vector<int> index_sorted(numProcesses);
-    for (int i = 0; i < numProcesses; i++) 
-    {
-        index_sorted[i] = i;
+    sort(process.begin(),process.end(),compareProcess);
+    // for(auto p:process){
+    //     cout<<p.process_id<<" "<<p.burst_time<<" "<<p.priority<<endl;
+    // }
+    process[0].turnaround_time=process[0].burst_time;
+    process[0].waiting_time=0;
+    for(i=1;i<=process_num;i++){
+        process[i].turnaround_time=process[i].burst_time+process[i-1].turnaround_time;
+        process[i].waiting_time=process[i].turnaround_time-process[i].burst_time;
     }
-
-    // Sorting based on priority and arrival time
-    int temp = 0;
-    for (int i = 0; i < numProcesses; i++) 
-    {
-        for (int j = i + 1; j < numProcesses; j++) 
-        {
-            if ( (arrivalTime[index_sorted[i]] >= arrivalTime[index_sorted[j]] || arrivalTime[index_sorted[j]] < temp) &&
-                priority[index_sorted[i]] < priority[index_sorted[j]] ) 
-            {
-                swap(index_sorted[i], index_sorted[j]);
-            }
-        }
-        temp = max( temp, arrivalTime[index_sorted[i]] ) + burstTime[index_sorted[i]];
+    cout<<"Gantt chart:"<<endl;
+    cout<<"|";
+    for(i=0;i<process_num;i++){
+        cout<<"---P"<<process[i].process_id<<"---|";
     }
-
-    for(int i=1; i<numProcesses; i++)
-    {
-        if( priority[index_sorted[i]] == priority[index_sorted[i-1]] && index_sorted[i-1] > index_sorted[i] )
-        {
-            swap(index_sorted[i], index_sorted[i-1]);
-        }
+    cout<<endl;
+    printf("%-9d",0);
+    for(auto p:process){
+        printf("%-9d",p.turnaround_time);
     }
-
-    int finishTime[numProcesses];
-    int startTime[numProcesses];
-    
-    for(int i=0; i<numProcesses; i++)
-    {
-        if(i==0)
-        {
-            startTime[i]= arrivalTime[index_sorted[i]];
-            finishTime[i]= arrivalTime[index_sorted[i]]+ burstTime[index_sorted[i]];
-        }
-        else
-        {
-            // precondition: assumes that the processes are sorted based on arrival time
-            startTime[i]= max(arrivalTime[index_sorted[i]], finishTime[i-1]);
-            finishTime[i]= startTime[i]+ burstTime[index_sorted[i]];
-        }
+    cout<<endl<<endl;
+    printf("%s\t%s\t\t%s\n","Process ID","Turnaround Time","Waiting Time");
+    for(auto p:process){
+        printf("P%d %20d %23d\n",p.process_id,p.turnaround_time,p.waiting_time);
+        wait+=p.waiting_time;
+        turn+=p.turnaround_time;
     }
-
-// Gantt chart 
-
-    cout << "Gantt chart:" << endl << endl;
-    cout << "|" ;
-    for(int i=0; i<numProcesses; i++)
-    {
-        if(i==0)
-        {
-            cout << startTime[i] << "|---p" << index_sorted[i]+1 << "---|" << finishTime[i] ;
-        }
-        else if(startTime[i]==finishTime[i-1])
-        {
-        cout << "|---p" << index_sorted[i]+1 << "---|" << finishTime[i] ;
-        }
-        else
-        {
-            cout << "|---#---|" << startTime[i];
-            cout << "|---p" << index_sorted[i]+1 << "---|" << finishTime[i] ;
-        }
-    }
-    cout << "|" << endl << endl;
-
-    // Turnaround time and waiting time 
-    
-    int turnaround[numProcesses], waiting_time[numProcesses];
-    for(int i=0; i<numProcesses; i++)
-    {
-        turnaround[i]= finishTime[i]- arrivalTime[index_sorted[i]];
-        waiting_time[i]= turnaround[i]- burstTime[index_sorted[i]];
-    }
-
-    int total=0;
-    cout << "Turnaround time of each process: " << endl;
-    for(int i=0; i<numProcesses; i++)
-    {
-        cout << "P" << i+1 << ": " << turnaround[i] << endl;
-        total += turnaround[i];
-    }
-
-    cout << "Average turnaround time: " << total/numProcesses << endl;
-
-    total=0;
-    cout << "Waiting time of each process: " << endl;
-    for(int i=0; i<numProcesses; i++)
-    {
-        cout << "P" << i+1 << ": " << waiting_time[i] << endl;
-        total += waiting_time[i];
-    }
-
-    cout << "Average waiting time: " << total/numProcesses << endl;
-
-
-    printf("%s\t%s\t\t%s\t%s\n", "Process ID", "Turnaround Time", "Waiting Time", "Priority") ; 
-    for( auto p : process )
-    {
-        printf("P%d %20d %20d %17d\n", p.processID, p.turnaroundTime, p.waitingTime, p.priority) ; 
-        wait += p.waitingTime ; 
-        turn += p.turnaroundTime ; 
-    }
-
+    cout<<"Average turnaround time: "<<(double)turn/process_num<<endl;
+    cout<<"Average waiting time: "<<(double)wait/process_num<<endl;
 }
-
+bool compareProcess(Process a,Process b){
+    if(a.priority==b.priority){
+        return a.burst_time<b.burst_time;
+    }
+    return a.priority>b.priority;
+}

@@ -1,120 +1,116 @@
 #include<bits/stdc++.h>
-using namespace std ; 
-
-struct Process
-{
-    int processID ; 
-    int burstTime ; 
-    int arrivalTime ; 
-    int priority ; 
-    int waitingTime ; 
-    int turnaroundTime ; 
-    int runTime ;
-    bool isDone ;
-} ; 
-
-bool compareProcessBurst(Process a, Process b)
-{
-    if( !a.isDone )
-        return (a.burstTime <= b.burstTime) ; 
-    else 
-    return false ;
-} 
-
-bool compareProcessArr(Process a, Process b)
-{
-    if( !a.isDone )
-        return (a.arrivalTime <= b.arrivalTime) ;
-    else 
-    return false ;
-} 
-
-int main()
-{
-    freopen("inputAr.txt", "r", stdin) ; 
-    int processNumber = 5 , i ; 
-    vector<Process> process(processNumber+1) ;  //  processRun(processNumber)
-    Process temp;
-    int value, wait = 0, turn = 0 ; 
-    string curr_process ; 
-    char ch ; 
-    
-    temp.turnaroundTime = temp.burstTime = 0 ; 
-    temp.waitingTime = 0 ;
-    temp.isDone = true ;  
-    temp.runTime = 0 ;
-    process.push_back(temp) ;
-
-    cin >> processNumber ;
-
-    for( i = 1 ; i <= processNumber ; i++ )
-    {
-        cin >> value ; 
-        process[i].burstTime = value ; 
-        cin >> value ; 
-        process[i].priority = value ; 
-        cin >> value ; 
-        process[i].arrivalTime = value ; 
-        process[i].processID = i  ; 
-        process[i].isDone = false ; 
+using namespace std;
+struct Process{
+    string name;
+    int burst_time;
+    int priority;
+    int arrival;
+    int turn_around_time;
+    int waiting_time;
+};
+struct Result{
+    string name;
+    int start;
+    int end;
+};
+bool process_comparator(Process a,Process b);
+void set_arrived_process(vector<Process> &arrived_process,vector<Process> temp,int curr_time);
+int main(){
+    freopen("input.txt","r",stdin);
+    int i,j;
+    int wait=0,turn=0;
+    int value,process_num=6;
+    vector<Process> process;
+    vector<Result> results;
+    Process temp_process;
+    for(i=0;i<process_num;i++){
+        temp_process.name="P"+to_string(i+1);
+        cin>>value;
+        temp_process.burst_time=value;
+        cin>>value;
+        temp_process.priority=value;
+        cin>>value;
+        temp_process.arrival=value;
+        temp_process.turn_around_time=0;
+        temp_process.waiting_time=0;
+        process.push_back(temp_process);
     }
-
-    sort(process.begin(), process.end(), compareProcessArr ) ; 
-    
-
-    for( i = 0 ; i <= processNumber ; i++ )
-    {
-        sort(process.begin()+i-1, process.end(), compareProcessBurst ) ;
-        if( process[i].arrivalTime <= process[i-1].runTime )
-        {
-            
-            process[i].turnaroundTime = process[i].burstTime + process[i-1].turnaroundTime ; 
-            process[i].waitingTime = process[i].turnaroundTime - process[i].burstTime ;
-            process[i].runTime = process[i-1].runTime + process[i].burstTime ;
-        } 
-        else
-        {
-            sort(process.begin()+i, process.end(), compareProcessArr ) ;
-            process[i].turnaroundTime = process[i].burstTime + process[i-1].turnaroundTime ; 
-            process[i].waitingTime = process[i].turnaroundTime - process[i].burstTime ;
-            process[i].runTime = process[i-1].runTime + process[i].burstTime ;
+    vector<Process> temp;
+    temp=process;
+    sort(temp.begin(),temp.end(),process_comparator);
+    int curr_time=0;
+    Result result;
+    vector<Process> arrived_process;
+    Process curr_process;
+    while(!temp.empty()){
+        set_arrived_process(arrived_process,temp,curr_time);
+        if(arrived_process.empty()){
+            result.name="DL";
+            result.start=curr_time;
+            curr_time=temp.front().arrival;
+            result.end=curr_time;
+            results.push_back(result);
+        }
+        else{
+            curr_process=arrived_process.front();
+            result.name=curr_process.name;
+            result.start=curr_time;
+            curr_time+=curr_process.burst_time;
+            result.end=curr_time;
+            results.push_back(result);
+            auto it=temp.begin();
+            while(it!=temp.end()){
+                if((*it).name==curr_process.name){
+                    temp.erase(it);
+                    break;
+                }
+                it++;
+            }
         }
     }
-
-    cout << "\nGantt chart:" << endl ; 
-    cout << "|" ; 
-    for( i = 0 ; i < processNumber ; i++ )
-    {
-        cout << "---P" << process[i].processID << "---|" ; 
+    printf("|");
+    for(auto r:results){
+        printf("---%s---|",r.name.c_str());
     }
-    cout << endl  ; 
-    printf("%-9d", 0) ; 
-    for( auto p : process )
-    {
-        printf("%-9d", p.turnaroundTime) ; 
+    cout<<endl;
+    printf("%-9d",0);
+    for(auto r:results){
+        printf("%-9d",r.end);
+        if(r.name!="DL"){
+            for(auto &p:process){
+                if(p.name==r.name){
+                    p.turn_around_time=r.end-p.arrival;
+                    p.waiting_time=p.turn_around_time-p.burst_time;
+                }
+            }
+        }
     }
-    cout << endl << endl ; 
-
-    printf("%s\t%s\t\t%s\n", "Process ID", "Turnaround Time", "Waiting Time") ; 
-
-    for( auto p : process )
-    {
-        printf("P%d %20d %23d\n", p.processID, p.turnaroundTime, p.waitingTime) ; 
-        wait += p.waitingTime ; 
-        turn += p.turnaroundTime ; 
+    cout<<endl<<endl;
+    printf("%s\t%s\t\t%s\n","Process ID","Turnaround Time","Waiting Time");
+    for(auto p:process){
+        printf("%s %20d %23d\n",p.name.c_str(),p.turn_around_time,p.waiting_time);
+        wait+=p.waiting_time;
+        turn+=p.turn_around_time;
     }
-    cout << "Average turnaround time: " << (double)turn/processNumber << endl ; 
-    cout << "Average waiting time: " << (double)wait/processNumber << endl ; 
+    cout<<endl<<endl;
+    cout<<"Average Turnaround Time: "<<(double)turn/process_num<<endl;
+    cout<<"Average Waiting Time: "<<(double)wait/process_num<<endl;
+    return 0;
+}
+bool process_comparator(Process a,Process b){
+    if(a.arrival==b.arrival){
+        return a.burst_time<b.burst_time;
+    }
+    return a.arrival<b.arrival;
 }
 
-/*
-
-6
-20 40 0
-25 30 25
-10 30 30 
-15 35 10
-15 5 40
-30 10 10
-
-*/
+void set_arrived_process(vector<Process> &arrived_process,vector<Process> temp,int curr_time){
+    arrived_process.clear();
+    for(auto t:temp){
+        if(t.arrival>curr_time){
+            break;
+        }
+        arrived_process.push_back(t);
+    }
+    sort(arrived_process.begin(),arrived_process.end(),process_comparator);
+}
