@@ -19,34 +19,42 @@ int main(){
     chopsticks[philNum];
     pthread_t philosopers[philNum];
     int philID[philNum];
-    for(int i = 0; i < philNum; i++){
+    for(int i = 0; i < philNum; i++)
+    {
         philID[i] = i + 1;
     }
-    for(int i = 0; i < chopNum; i++){
+    for(int i = 0; i < chopNum; i++)
+    {
         sem_init(&chopsticks[i], 0, 1);
     }
-    for(int i = 0; i < philNum; i++){
+    for(int i = 0; i < philNum; i++)
+    {
         pthread_create(&philosopers[i], NULL, eat, &philID[i]);
     }
-    for(int i = 0; i < philNum; i++){
+    for(int i = 0; i < philNum; i++)
+    {
         pthread_join(philosopers[i], NULL);
     }
     return 0;
 }
 
-void *eat(void *arg){
+void *eat(void *arg)
+{
     int num = *(int *)arg;
-    while(1){
+    while(1)
+    {
         int left = num;
         int right = ( num  == philNum ) ? (num + 1) % philNum : num + 1;
         printf("Philosopher %d is thinking.....\n\n", num);
         sleep((rand() % 3) + 1);
         printf("Philosopher %d is hungry\n\n", num);
-        if(num == philNum){
+        if(num == philNum)
+        {
             sem_wait(&chopsticks[num % philNum]);
             sem_wait(&chopsticks[num - 1]);
         }
-        else{
+        else
+        {
             sem_wait(&chopsticks[num - 1]);
             sem_wait(&chopsticks[num % philNum]);
         }
