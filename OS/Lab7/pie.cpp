@@ -4,7 +4,6 @@
 #include <time.h>
 #include <math.h>
 
-
 double random_value1, random_value2, dis;
 int inside = 0 ;
 void *runner(void *param);                    /* the thread */

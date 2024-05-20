@@ -4,6 +4,8 @@
         "deque": "cpp",
         "string": "cpp",
         "vector": "cpp",
-        "cmath": "cpp"
+        "cmath": "cpp",
+        "bitset": "cpp",
+        "ostream": "cpp"
     }
 }
